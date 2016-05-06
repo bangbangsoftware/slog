@@ -1,0 +1,29 @@
+{
+  "name": "slog",
+  "version": "1.0.0",
+  "description": "A simple log watch to post to #slack",
+  "main": "slog.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/bangbangsoftware/slog.git"
+  },
+  "keywords": [
+    "slack",
+    "log",
+    "node",
+    "javascript"
+  ],
+  "author": "Mick Carter",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bangbangsoftware/slog/issues"
+  },
+  "homepage": "https://github.com/bangbangsoftware/slog#readme",
+  "devDependencies": {
+    "slack-node": "^0.2.0",
+    "tail": "^1.1.0"
+  }
+}
