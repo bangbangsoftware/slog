@@ -4,7 +4,8 @@
   "description": "A simple log watch to post to #slack",
   "main": "slog.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./mocha",
+    "start": "./slog.js"
   },
   "repository": {
     "type": "git",

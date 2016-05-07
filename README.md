@@ -11,5 +11,6 @@ BINGO!
 
 @TODO
 -----
+ * More tests
+ * Create a config if one is missing with init like questionaire
 
-Filter out most of the log and send exceptions in one chunk.
