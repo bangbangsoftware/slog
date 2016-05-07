@@ -50,8 +50,16 @@ describe('slog does in fact slog', function() {
         };
         var conf = slog.getConf(confile);
         var data = {};
+        var webh = "notSet";
+        var sendData = "notSet";
         var slack = {
-            setWebhook: function(d) {}
+            setWebhook: function(d) {
+                webh = d;
+            },
+            webhook: function(sd,cb){
+                sendData = sd;
+                cb();
+            }
         };
         slog.processChange(data, conf, slack);
 
