@@ -4,10 +4,10 @@ var getConf = function() {
     return require('./config.slog.json');
 }
 
-var processChange = function(data, patt) {
+var processChange = function(data, conf) {
     console.log("")
     console.log(new Date() + " Log has changed")
-    if (patt.test(data)) {
+    if (conf.patt.test(data)) {
         console.log("About to slack")
         var webhookUri = conf.webhookUri;
         var slack = new Slack();
@@ -41,16 +41,16 @@ var go = function() {
     var conf = getConf();
 
     var tail = new Tail(conf.log);
-    var patt = function(data) {
+    conf.patt = function(data) {
         return true;
     }
     if (conf.contains) {
-        patt = new RegExp(conf.contains);
+        conf.patt = new RegExp(conf.contains);
         console.log("Set up regular expression with '" + conf.contains + "'.");
     }
 
     tail.on("line", function(data) {
-        processChange(data,patt);
+        processChange(data,conf);
     });
 
     tail.on("error", function(error) {
