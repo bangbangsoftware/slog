@@ -1,8 +1,7 @@
 #!/bin/node
 
-var getConf = function() {
+var getConf = function(conf) {
     "use strict";
-    var conf  = require('./config.slog.json');
     conf.patt = function(data) {
         return true;
     }
@@ -17,6 +16,7 @@ var getConf = function() {
 
     return conf;
 }
+module.exports.getConf = getConf;
 
 var Slack = require('slack-node');
 var processChange = function(data, conf) {
@@ -46,14 +46,15 @@ var processChange = function(data, conf) {
         console.log(data);
         console.log("AS the regular expression '" + conf.contains + "' failed.");
     }
-
 }
+module.exports.processChange = processChange;
 
 var go = function() {
     "use strict";
 
     var Tail = require('tail').Tail;
-    var conf = getConf();
+    var confile = require('./config.slog.json');
+    var conf = getConf(confile);
 
     var tail = new Tail(conf.log);
     tail.on("line", function(data) {

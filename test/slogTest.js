@@ -1,13 +1,24 @@
 var assert = require('chai').assert;
 
 var slog = require('../slog');
-console.log(slog);
 
-describe('Array', function() {
-    describe('#indexOf()', function() {
-        it('should return -1 when the value is not present', function() {
-            assert.equal(-1, [1, 2, 3].indexOf(5));
-            assert.equal(-1, [1, 2, 3].indexOf(0));
+describe('slog does in fact slog', function() {
+    describe('getConf', function() {
+        var tester = {
+            "webhookUri": "https://hooks.slack.com/services/boom",
+            "log": "crossbow.log",
+            "contains": "exception",
+            "ignoreCase": true
+
+        }
+        var conf = slog.getConf(tester);
+        console.log("typeof conf.patt");
+        console.log(conf.patt);
+        it('conf log is correct', function() {
+            assert.equal(conf.log, 'crossbow.log');
+        });
+        it('conf makes a regular expression', function() {
+            assert.equal(conf.patt+"","/exception/i");
         });
     });
 });
