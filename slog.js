@@ -4,6 +4,7 @@ var getConf = function() {
     return require('./config.slog.json');
 }
 
+var Slack = require('slack-node');
 var processChange = function(data, conf) {
     console.log("")
     console.log(new Date() + " Log has changed")
@@ -37,7 +38,6 @@ var go = function() {
     "use strict";
 
     var Tail = require('tail').Tail;
-    var Slack = require('slack-node');
     var conf = getConf();
 
     var tail = new Tail(conf.log);
@@ -45,7 +45,11 @@ var go = function() {
         return true;
     }
     if (conf.contains) {
-        conf.patt = new RegExp(conf.contains);
+        if (conf.ignoreCase){
+           conf.patt = new RegExp(conf.contains,'i');
+        } else {    
+           conf.patt = new RegExp(conf.contains);
+        }
         console.log("Set up regular expression with '" + conf.contains + "'.");
     }
 
