@@ -23,6 +23,9 @@
   },
   "homepage": "https://github.com/bangbangsoftware/slog#readme",
   "devDependencies": {
+    "chai": "^3.5.0",
+    "karma": "^0.13.22",
+    "mocha": "^2.4.5",
     "slack-node": "^0.2.0",
     "tail": "^1.1.0"
   }
