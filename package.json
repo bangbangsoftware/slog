@@ -4,7 +4,7 @@
   "description": "A simple log watch to post to #slack",
   "main": "slog.js",
   "scripts": {
-    "test": "./mocha",
+    "test": "./istanbul cover _mocha -- -R spec",
     "start": "./slog.js"
   },
   "repository": {
@@ -25,6 +25,7 @@
   "homepage": "https://github.com/bangbangsoftware/slog#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "istanbul": "^0.4.3",
     "karma": "^0.13.22",
     "mocha": "^2.4.5",
     "slack-node": "^0.2.0",

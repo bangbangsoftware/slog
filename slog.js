@@ -30,7 +30,6 @@ var processChange = function(data, conf,slack) {
     if (conf.patt.test(data)) {
         console.log("About to slack")
         var webhookUri = conf.webhookUri;
-        var slack = new Slack();
         slack.setWebhook(webhookUri);
 
         slack.webhook({

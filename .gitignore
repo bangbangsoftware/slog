@@ -35,5 +35,8 @@ node_modules
 # Can't have my config
 config.slog.json
 
-#Vim
+# Vim
 *.swp
+
+# Coverage
+/coverage
