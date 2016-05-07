@@ -2,9 +2,11 @@
 
 var getConf = function(conf) {
     "use strict";
-    conf.patt = function(data) {
-        return true;
-    }
+    conf.patt = {
+        test: function(data) {
+            return true;
+        }
+    };
     if (conf.contains) {
         if (conf.ignoreCase) {
             conf.patt = new RegExp(conf.contains, 'i');

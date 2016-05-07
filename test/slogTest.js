@@ -8,17 +8,39 @@ describe('slog does in fact slog', function() {
             "webhookUri": "https://hooks.slack.com/services/boom",
             "log": "crossbow.log",
             "contains": "exception",
-            "ignoreCase": true
-
-        }
+            "ignoreCase": false 
+        };
         var conf = slog.getConf(tester);
-        console.log("typeof conf.patt");
-        console.log(conf.patt);
         it('conf log is correct', function() {
             assert.equal(conf.log, 'crossbow.log');
         });
         it('conf makes a regular expression', function() {
-            assert.equal(conf.patt+"","/exception/i");
+            assert.equal(conf.patt.test("EXCEPTION"),false);
+            assert.equal(conf.patt.test("exception"),true);
         });
+
+        var ignoreCase = {
+            "webhookUri": "https://hooks.slack.com/services/boom",
+            "log": "crossbow.log",
+            "contains": "exception",
+            "ignoreCase": true 
+        };
+
+        var confic = slog.getConf(ignoreCase);
+        console.log(confic);
+        it('conf makes a regular expression which ignore case', function() {
+            assert.equal(confic.patt.test("EXCEPTION"),true);
+        });
+ 
+        var noContains = {
+            "webhookUri": "https://hooks.slack.com/services/boom",
+            "log": "crossbow.log",
+        };
+        var conf2 = slog.getConf(noContains);
+        it('conf makes a default always true pattern', function() {
+            assert.equal(conf2.patt.test("adhfjhdsf"),true);
+        });
+    });
+    describe('processChange', function() {
     });
 });
