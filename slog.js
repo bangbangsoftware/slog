@@ -21,7 +21,9 @@ var getConf = function(conf) {
 module.exports.getConf = getConf;
 
 var Slack = require('slack-node');
-var processChange = function(data, conf) {
+var slack = new Slack();
+
+var processChange = function(data, conf,slack) {
     "use strict";
     console.log("")
     console.log(new Date() + " Log has changed")
@@ -59,8 +61,9 @@ var go = function() {
     var conf = getConf(confile);
 
     var tail = new Tail(conf.log);
+    var slack = new Slack();
     tail.on("line", function(data) {
-        processChange(data, conf);
+        processChange(data, conf, slack);
     });
 
     tail.on("error", function(error) {
