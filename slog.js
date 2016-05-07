@@ -1,11 +1,26 @@
 #!/bin/node
 
 var getConf = function() {
-    return require('./config.slog.json');
+    "use strict";
+    var conf  = require('./config.slog.json');
+    conf.patt = function(data) {
+        return true;
+    }
+    if (conf.contains) {
+        if (conf.ignoreCase) {
+            conf.patt = new RegExp(conf.contains, 'i');
+        } else {
+            conf.patt = new RegExp(conf.contains);
+        }
+        console.log("Set up regular expression with '" + conf.contains + "'.");
+    }
+
+    return conf;
 }
 
 var Slack = require('slack-node');
 var processChange = function(data, conf) {
+    "use strict";
     console.log("")
     console.log(new Date() + " Log has changed")
     if (conf.patt.test(data)) {
@@ -41,20 +56,8 @@ var go = function() {
     var conf = getConf();
 
     var tail = new Tail(conf.log);
-    conf.patt = function(data) {
-        return true;
-    }
-    if (conf.contains) {
-        if (conf.ignoreCase){
-           conf.patt = new RegExp(conf.contains,'i');
-        } else {    
-           conf.patt = new RegExp(conf.contains);
-        }
-        console.log("Set up regular expression with '" + conf.contains + "'.");
-    }
-
     tail.on("line", function(data) {
-        processChange(data,conf);
+        processChange(data, conf);
     });
 
     tail.on("error", function(error) {
