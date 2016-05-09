@@ -1,6 +1,23 @@
 #!/bin/node
 
-var getConf = function(conf) {
+var q = require('q');
+var fs = require('fs');
+var saveConf = function(name, content) {
+    var defer = q.defer();
+    var data = JSON.stringify(content,null,2);
+    console.log(data);
+    fs.writeFile(name, data, function(err) {
+        if (err) {
+            console.error(new Error("Could not save config",err));
+            defer.reject(err);
+        }
+        console.log("The " + name + " was saved!");
+        defer.resolve(content);
+    });
+    return defer.promise;
+}
+
+var setupConf = function(conf) {
     "use strict";
     conf.patt = {
         test: function(data) {
@@ -18,12 +35,12 @@ var getConf = function(conf) {
 
     return conf;
 }
-module.exports.getConf = getConf;
+module.exports.setupConf = setupConf;
 
 var Slack = require('slack-node');
 var slack = new Slack();
 
-var processChange = function(data, conf,slack) {
+var processChange = function(data, conf, slack) {
     "use strict";
     console.log("")
     console.log(new Date() + " Log has changed")
@@ -40,8 +57,7 @@ var processChange = function(data, conf,slack) {
         }, function(err, response) {
             console.log(response);
             if (err) {
-                console.log("Eak something went bad");
-                console.log(err);
+                console.error(new Error("Eak something went bad",err));
             }
         });
     } else {
@@ -52,21 +68,88 @@ var processChange = function(data, conf,slack) {
 }
 module.exports.processChange = processChange;
 
-var go = function() {
+var fileExists = function(confileName) {
+    try {
+        // Query the entry
+        stats = fs.lstatSync(confileName);
+
+        // Is it a directory?
+        if (stats.isFile()) {
+            return true
+        }
+    } catch (e) {
+        // console.log(e);
+    }
+    return false;
+}
+
+var tailAway = function(conf) {
+    console.log("Let the log watching begin");
+    if (fileExists(conf.log)) {
+        var Tail = require('tail').Tail;
+        var tail = new Tail(conf.log);
+        var slack = new Slack();
+        tail.on("line", function(data) {
+            processChange(data, conf, slack);
+        });
+
+        tail.on("error", function(error) {
+            console.error(new Error('ERROR: ', error));
+        });
+    } else {
+        console.error(new Error("Cannot see to file log file: '" + conf.log + "'."));
+        return false;
+    }
+}
+
+var go = function(configs) {
+    console.log("Setting up");
+    var conf = setupConf(configs);
+    tailAway(conf);
+}
+
+var ask = function(confilrNam) {
+    var inquirer = require("inquirer");
+    var questions = [{
+        type: 'input',
+        name: 'WebhookUri',
+        message: 'What is your #slack webhookUri (See https://api.slack.com/incoming-webhooks)',
+        default: 'https://hooks.slack.com/services/THIS-IS_MADE_UP'
+    }, {
+        type: 'input',
+        name: 'log',
+        message: 'What is your the full path to your log file',
+        default: '/var/log/syslog'
+    }, {
+        type: 'input',
+        name: 'contains',
+        message: 'Is there any regular expression you want to filter by',
+        default: 'ERROR'
+    }, {
+        type: 'confirm',
+        name: 'IgnoreCase',
+        message: 'Do you want to ignore case in your filter',
+    }];
+
+    return inquirer.prompt(questions);
+}
+
+var start = function() {
     "use strict";
 
-    var Tail = require('tail').Tail;
-    var confile = require('./config.slog.json');
-    var conf = getConf(confile);
-
-    var tail = new Tail(conf.log);
-    var slack = new Slack();
-    tail.on("line", function(data) {
-        processChange(data, conf, slack);
-    });
-
-    tail.on("error", function(error) {
-        console.log('ERROR: ', error);
-    });
+    var confileName = './config.slog.json';
+    var conf = null;
+    if (fileExists(confileName)) {
+        conf = require(confileName);
+        go(conf);
+    } else {
+        ask(confileName).then(function(answers) {
+            return saveConf(confileName, answers);
+        }).then(function(c) {
+            //console.log("Configuration created please restart");
+            go(c);
+        })
+    };
 };
-go();
+
+start();

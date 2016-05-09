@@ -3,14 +3,14 @@ var assert = require('chai').assert;
 var slog = require('../slog');
 
 describe('slog does in fact slog', function() {
-    describe('getConf', function() {
+    describe('setupConf', function() {
         var tester = {
             "webhookUri": "https://hooks.slack.com/services/boom",
             "log": "crossbow.log",
             "contains": "exception",
             "ignoreCase": false
         };
-        var conf = slog.getConf(tester);
+        var conf = slog.setupConf(tester);
         it('conf log is correct', function() {
             assert.equal(conf.log, 'crossbow.log');
         });
@@ -26,7 +26,7 @@ describe('slog does in fact slog', function() {
             "ignoreCase": true
         };
 
-        var confic = slog.getConf(ignoreCase);
+        var confic = slog.setupConf(ignoreCase);
         console.log(confic);
         it('conf makes a regular expression which ignore case', function() {
             assert.equal(confic.patt.test("EXCEPTION"), true);
@@ -36,7 +36,7 @@ describe('slog does in fact slog', function() {
             "webhookUri": "https://hooks.slack.com/services/boom",
             "log": "crossbow.log",
         };
-        var conf2 = slog.getConf(noContains);
+        var conf2 = slog.setupConf(noContains);
         it('conf makes a default always true pattern', function() {
             assert.equal(conf2.patt.test("adhfjhdsf"), true);
         });
@@ -49,7 +49,7 @@ describe('slog does in fact slog', function() {
             "contains": "exception",
             "ignoreCase": true
         };
-        var conf = slog.getConf(confile);
+        var conf = slog.setupConf(confile);
         var data = "Sat May 07 2016 16:58:12 GMT+0100 (BST) - Just normal debug.....";
         var webh = "notSet";
         var sendData = "notSet";

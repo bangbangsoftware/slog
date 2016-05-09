@@ -40,3 +40,6 @@ config.slog.json
 
 # Coverage
 /coverage
+
+# Practice log
+crossbow.log
