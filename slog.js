@@ -49,8 +49,7 @@ var processChange = function(data, conf, slack) {
     console.log(new Date() + " Log has changed")
     if (conf.patt.test(data)) {
         console.log("About to slack")
-        var webhookUri = conf.webhookUri;
-        slack.setWebhook(webhookUri);
+        slack.setWebhook(conf.webhookUri);
 
         slack.webhook({
             channel: "#logs",
@@ -114,7 +113,7 @@ var go = function(configs) {
     tailAway(conf);
 }
 
-var ask = function(confilrNam) {
+var ask = function() {
     var inquirer = require("inquirer");
     var questions = [{
         type: 'input',
@@ -142,12 +141,11 @@ var ask = function(confilrNam) {
 
 var start = function() {
     "use strict";
-
     var confileName = './config.slog.json';
     if (fileExists(confileName)) {
         go(require(confileName));
     } else {
-        ask(confileName).then(function(answers) {
+        ask().then(function(answers) {
             return saveConf(confileName, answers);
         }).then(function(c) {
             go(c);
