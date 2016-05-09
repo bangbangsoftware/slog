@@ -5,7 +5,7 @@
   "main": "slog.js",
   "scripts": {
     "test": "./istanbul cover _mocha -- -R spec",
-    "start": "./slog.js"
+    "start": " node slog.js"
   },
   "repository": {
     "type": "git",

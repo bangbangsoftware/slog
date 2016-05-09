@@ -43,3 +43,4 @@ config.slog.json
 
 # Practice log
 crossbow.log
+config.TEST.slog.json

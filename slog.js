@@ -16,6 +16,9 @@ var saveConf = function(name, content) {
     });
     return defer.promise;
 }
+module.exports.saveConf = saveConf;
+
+
 
 var setupConf = function(conf) {
     "use strict";
@@ -37,9 +40,9 @@ var setupConf = function(conf) {
 }
 module.exports.setupConf = setupConf;
 
+
 var Slack = require('slack-node');
 var slack = new Slack();
-
 var processChange = function(data, conf, slack) {
     "use strict";
     console.log("")
@@ -68,6 +71,7 @@ var processChange = function(data, conf, slack) {
 }
 module.exports.processChange = processChange;
 
+
 var fileExists = function(confileName) {
     try {
         // Query the entry
@@ -82,6 +86,8 @@ var fileExists = function(confileName) {
     }
     return false;
 }
+module.exports.fileExists = fileExists;
+
 
 var tailAway = function(conf) {
     console.log("Let the log watching begin");
@@ -138,15 +144,12 @@ var start = function() {
     "use strict";
 
     var confileName = './config.slog.json';
-    var conf = null;
     if (fileExists(confileName)) {
-        conf = require(confileName);
-        go(conf);
+        go(require(confileName));
     } else {
         ask(confileName).then(function(answers) {
             return saveConf(confileName, answers);
         }).then(function(c) {
-            //console.log("Configuration created please restart");
             go(c);
         })
     };

@@ -86,7 +86,7 @@ describe('slog does in fact slog', function() {
                 cb(err, response);
             }
         };
- 
+
         var data2 = "Sat May 07 2016 16:58:12 GMT+0100 (BST) - Null Pointer Exception.....";
         var expect = {
             channel: "#logs",
@@ -112,4 +112,23 @@ describe('slog does in fact slog', function() {
         });
 
     });
+
+    describe('saveConf', function() {
+        var conf = {
+            "webhookUri": "https://hooks.slack.com/services/boom",
+            "log": "crossbow.log",
+            "contains": "exception",
+            "ignoreCase": true
+        };
+        var confileName = './config.TEST.slog.json';
+        if (slog.fileExists(confileName)) {
+            var fs = require('fs');
+            fs.unlink(confileName);
+        }
+        slog.saveConf(confileName,conf);
+        it('has created a configuration file', function() {
+            assert(slog.fileExists(confileName), true);
+        })
+    });
+
 });
