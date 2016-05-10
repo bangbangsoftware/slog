@@ -112,6 +112,7 @@ var go = function(configs) {
     var conf = setupConf(configs);
     tailAway(conf);
 }
+module.exports.slack2log = go;
 
 var ask = function() {
     var inquirer = require("inquirer");
