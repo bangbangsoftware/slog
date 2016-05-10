@@ -125,10 +125,11 @@ describe('slog does in fact slog', function() {
             var fs = require('fs');
             fs.unlink(confileName);
         }
-        slog.saveConf(confileName,conf);
+        slog.saveConf(confileName, conf);
         it('has created a configuration file', function() {
             assert(slog.fileExists(confileName), true);
-        })
+        });
+
     });
 
 });
