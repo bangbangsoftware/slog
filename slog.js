@@ -133,7 +133,7 @@ var ask = function() {
         default: 'ERROR'
     }, {
         type: 'confirm',
-        name: 'IgnoreCase',
+        name: 'ignoreCase',
         message: 'Do you want to ignore case in your filter',
     }];
 

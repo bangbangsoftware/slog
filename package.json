@@ -1,6 +1,6 @@
 {
   "name": "log2slack",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A simple log watch to post to #slack",
   "main": "slog.js",
   "scripts": {
