@@ -4,18 +4,18 @@ var q = require('q');
 var fs = require('fs');
 var saveConf = function(name, content) {
     var defer = q.defer();
-    var data = JSON.stringify(content,null,2);
+    var data = JSON.stringify(content, null, 2);
     console.log(data);
     fs.writeFile(name, data, function(err) {
         if (err) {
-            console.error(new Error("Could not save config",err));
+            console.error(new Error("Could not save config", err));
             defer.reject(err);
         }
         console.log("The " + name + " was saved!");
         defer.resolve(content);
     });
     return defer.promise;
-}
+};
 module.exports.saveConf = saveConf;
 
 
@@ -23,7 +23,7 @@ module.exports.saveConf = saveConf;
 var setupConf = function(conf) {
     "use strict";
     conf.patt = {
-        test: function(data) {
+        test: function() {
             return true;
         }
     };
@@ -37,54 +37,56 @@ var setupConf = function(conf) {
     }
 
     return conf;
-}
+};
 module.exports.setupConf = setupConf;
 
 
 var Slack = require('slack-node');
-var slack = new Slack();
 var processChange = function(data, conf, slack) {
     "use strict";
-    console.log("")
-    console.log(new Date() + " Log has changed")
+    console.log("");
+    console.log(new Date() + " Log has changed");
     if (conf.patt.test(data)) {
-        console.log("About to slack")
+        console.log("About to slack");
         slack.setWebhook(conf.webhookUri);
-
-        slack.webhook({
+        var payload = {
             channel: "#logs",
             username: "webhookbot",
             text: data,
             icon_emoji: ":ghost:"
-        }, function(err, response) {
+        };
+        slack.webhook(payload, function(err, response) {
             console.log(response);
             if (err) {
-                console.error(new Error("Eak something went bad",err));
+                console.log(conf.webhookUri);
+                console.log(payload);
+                console.error(new Error("Eak something went bad", err));
+                process.exit(1);
             }
         });
     } else {
-        console.log("Skipped telling slack about...")
+        console.log("Skipped telling slack about...");
         console.log(data);
         console.log("AS the regular expression '" + conf.contains + "' failed.");
     }
-}
+};
 module.exports.processChange = processChange;
 
 
 var fileExists = function(confileName) {
     try {
         // Query the entry
-        stats = fs.lstatSync(confileName);
+        var stats = fs.lstatSync(confileName);
 
         // Is it a directory?
         if (stats.isFile()) {
-            return true
+            return true;
         }
     } catch (e) {
         // console.log(e);
     }
     return false;
-}
+};
 module.exports.fileExists = fileExists;
 
 
@@ -105,13 +107,13 @@ var tailAway = function(conf) {
         console.error(new Error("Cannot see to file log file: '" + conf.log + "'."));
         return false;
     }
-}
+};
 
 var go = function(configs) {
     console.log("Setting up");
     var conf = setupConf(configs);
     tailAway(conf);
-}
+};
 module.exports.slack2log = go;
 
 var ask = function() {
@@ -134,11 +136,11 @@ var ask = function() {
     }, {
         type: 'confirm',
         name: 'ignoreCase',
-        message: 'Do you want to ignore case in your filter',
+        message: 'Do you want to ignore case in your filter'
     }];
 
     return inquirer.prompt(questions);
-}
+};
 
 var start = function() {
     "use strict";
@@ -150,8 +152,8 @@ var start = function() {
             return saveConf(confileName, answers);
         }).then(function(c) {
             go(c);
-        })
-    };
+        });
+    }
 };
 
 start();
