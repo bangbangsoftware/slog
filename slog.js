@@ -60,6 +60,7 @@ var processChange = function(data, conf, slack) {
             if (err) {
                 console.log(conf.webhookUri);
                 console.log(payload);
+                console.log(err);
                 console.error(new Error("Eak something went bad", err));
                 process.exit(1);
             }
@@ -120,7 +121,7 @@ var ask = function() {
     var inquirer = require("inquirer");
     var questions = [{
         type: 'input',
-        name: 'WebhookUri',
+        name: 'webhookUri',
         message: 'What is your #slack webhookUri (See https://api.slack.com/incoming-webhooks)',
         default: 'https://hooks.slack.com/services/THIS-IS_MADE_UP'
     }, {
