@@ -27,6 +27,7 @@ var setupConf = function(conf) {
             return true;
         }
     };
+    conf.leftToTail = 0;
     if (conf.contains) {
         if (conf.ignoreCase) {
             conf.patt = new RegExp(conf.contains, 'i');
@@ -42,12 +43,15 @@ module.exports.setupConf = setupConf;
 
 
 var Slack = require('slack-node');
-var processChange = function(data, conf, slack) {
+var processChange = function(data, conf, slack, override) {
     "use strict";
     console.log("");
     console.log(new Date() + " Log has changed");
-    if (conf.patt.test(data)) {
+    if (conf.patt.test(data) || override) {
         console.log("About to slack");
+        if (override) {
+            console.log("has been overriden");
+        }
         slack.setWebhook(conf.webhookUri);
         var payload = {
             channel: "#logs",
@@ -65,11 +69,13 @@ var processChange = function(data, conf, slack) {
                 process.exit(1);
             }
         });
+        return true;
     } else {
         console.log("Skipped telling slack about...");
         console.log(data);
         console.log("AS the regular expression '" + conf.contains + "' failed.");
     }
+    return false;
 };
 module.exports.processChange = processChange;
 
@@ -90,6 +96,20 @@ var fileExists = function(confileName) {
 };
 module.exports.fileExists = fileExists;
 
+var setOverride = function(conf) {
+    if (conf.after > 0) {
+        if (conf.leftToTail === 0) {
+            conf.leftToTail = conf.after;
+        } else {
+            --conf.leftToTail;
+        }
+        if (conf.leftToTail > 0) {
+            return true;
+        }
+    }
+    return false;
+};
+module.exports.setOverride = setOverride;
 
 var tailAway = function(conf) {
     console.log("Let the log watching begin");
@@ -97,8 +117,12 @@ var tailAway = function(conf) {
         var Tail = require('tail').Tail;
         var tail = new Tail(conf.log);
         var slack = new Slack();
+        var override = false;
         tail.on("line", function(data) {
-            processChange(data, conf, slack);
+            var passed = processChange(data, conf, slack, override);
+            if (passed) {
+                override = setOverride(conf);
+            }
         });
 
         tail.on("error", function(error) {
@@ -138,6 +162,11 @@ var ask = function() {
         type: 'confirm',
         name: 'ignoreCase',
         message: 'Do you want to ignore case in your filter'
+    }, {
+        type: 'input',
+        name: 'after',
+        message: 'How many lines after the RegExp passes should be sent',
+        default: 'ERROR'
     }];
 
     return inquirer.prompt(questions);
