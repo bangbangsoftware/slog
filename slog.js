@@ -28,6 +28,8 @@ var setupConf = function(conf) {
         }
     };
     conf.leftToTail = 0;
+    conf.override = false;
+    conf.presend = [];
     if (conf.contains) {
         if (conf.ignoreCase) {
             conf.patt = new RegExp(conf.contains, 'i');
@@ -43,32 +45,39 @@ module.exports.setupConf = setupConf;
 
 
 var Slack = require('slack-node');
-var processChange = function(data, conf, slack, override) {
+var sendToSlack = function(slack, data, conf) {
+    console.log("About to slack");
+    slack.setWebhook(conf.webhookUri);
+    var payload = {
+        channel: "#logs",
+        username: "webhookbot",
+        text: data,
+        icon_emoji: ":ghost:"
+    };
+    slack.webhook(payload, function(err, response) {
+        console.log(response);
+        if (err) {
+            console.log(conf.webhookUri);
+            console.log(payload);
+            console.log(err);
+            console.error(new Error("Eak something went bad", err));
+            process.exit(1);
+        }
+    });
+};
+
+var processChange = function(data, conf, slack) {
     "use strict";
     console.log("");
     console.log(new Date() + " Log has changed");
-    if (conf.patt.test(data) || override) {
-        console.log("About to slack");
-        if (override) {
+    if (conf.patt.test(data) || conf.override) {
+        if (conf.override) {
             console.log("has been overriden");
         }
-        slack.setWebhook(conf.webhookUri);
-        var payload = {
-            channel: "#logs",
-            username: "webhookbot",
-            text: data,
-            icon_emoji: ":ghost:"
-        };
-        slack.webhook(payload, function(err, response) {
-            console.log(response);
-            if (err) {
-                console.log(conf.webhookUri);
-                console.log(payload);
-                console.log(err);
-                console.error(new Error("Eak something went bad", err));
-                process.exit(1);
-            }
+        conf.presend.forEach(function(preData) {
+            sendToSlack(slack, preData, conf);
         });
+        sendToSlack(slack, data, conf);
         return true;
     } else {
         console.log("Skipped telling slack about...");
@@ -111,17 +120,30 @@ var setOverride = function(conf) {
 };
 module.exports.setOverride = setOverride;
 
+var storeBefore = function(conf, data) {
+    if (conf.before < 1){
+        return;
+    }
+    if (conf.presend.length === conf.before){
+        conf.presend.shift();
+    }
+    conf.presend.push(data);
+};
+module.exports.storeBefore = storeBefore;
+
 var tailAway = function(conf) {
     console.log("Let the log watching begin");
     if (fileExists(conf.log)) {
         var Tail = require('tail').Tail;
         var tail = new Tail(conf.log);
         var slack = new Slack();
-        var override = false;
         tail.on("line", function(data) {
-            var passed = processChange(data, conf, slack, override);
+            var passed = processChange(data, conf, slack);
             if (passed) {
-                override = setOverride(conf);
+                conf.presend = [];    
+                conf.override = setOverride(conf);
+            } else {
+                storeBefore(conf, data);
             }
         });
 
@@ -166,7 +188,12 @@ var ask = function() {
         type: 'input',
         name: 'after',
         message: 'How many lines after the RegExp passes should be sent',
-        default: 'ERROR'
+        default: 0
+    }, {
+        type: 'input',
+        name: 'before',
+        message: 'How many lines before the RegExp passes should be sent',
+        default: 0
     }];
 
     return inquirer.prompt(questions);

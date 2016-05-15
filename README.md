@@ -3,6 +3,12 @@ SLOG
 
 A simple node program to tail a local file and send it to #slack.
 
+Features
+--------
+
+* RegExp filtering
+* Before and After capturing
+
 Quick Start
 -----------
 

@@ -141,7 +141,8 @@ describe('slog does in fact slog', function() {
             text: data2,
             icon_emoji: ":ghost:"
         };
-        slog.processChange(data2, conf, slack2, true);
+        conf.override = true;
+        slog.processChange(data2, conf, slack2);
         it('has set the right webhookUri', function() {
             assert.equal(webh, conf.webhookUri);
         });
@@ -160,21 +161,83 @@ describe('slog does in fact slog', function() {
 
     });
 
+    describe('processChange should send when override is true and send presend data', function() {
+
+        var webh = "notSet";
+        var sentData = [];
+        var slack2 = {
+            setWebhook: function(d) {
+                webh = d;
+            },
+            webhook: function(sd, cb) {
+                console.log("webhook-ed");
+                sentData.push(sd);
+                var err = undefined;
+                var response = "BANG";
+                cb(err, response);
+            }
+        };
+
+        var presendData = ["Sat May 07 2016 16:58:12 GMT+0100 (BST) - just some..",
+            "Sat May 07 2016 16:58:12 GMT+0100 (BST) - loggingg..",
+            "Sat May 07 2016 16:58:12 GMT+0100 (BST) - before the debug..",
+            "Sat May 07 2016 16:58:12 GMT+0100 (BST) - RegExp. fails with this debug.."
+        ];
+        conf.presend = presendData;
+        conf.override = true;
+        var data2 = "Sat May 07 2016 16:58:12 GMT+0100 (BST) - RegExp. fails with this debug..";
+        var expect = {
+            channel: "#logs",
+            username: "webhookbot",
+            icon_emoji: ":ghost:"
+        };
+        slog.processChange(data2, conf, slack2);
+        it('has set the right webhookUri', function() {
+            assert.equal(webh, conf.webhookUri);
+        });
+        it('has set the right channel', function() {
+            assert.equal(sentData[0].channel, expect.channel);
+        });
+        it('has set the right username', function() {
+            assert.equal(sentData[0].username, expect.username);
+        });
+        it('has set the right icon', function() {
+            assert.equal(sentData[0].icon_emoji, expect.icon_emoji);
+        });
+
+        it('has set the right text', function() {
+            assert.equal(sentData[0].text, presendData[0]);
+        });
+        it('has set the right text', function() {
+            assert.equal(sentData[1].text, presendData[1]);
+        });
+        it('has set the right text', function() {
+            assert.equal(sentData[2].text, presendData[2]);
+        });
+        it('has set the right text', function() {
+            assert.equal(sentData[3].text, presendData[3]);
+        });
+        it('has set the right text', function() {
+            assert.equal(sentData[4].text, data2);
+        });
+    });
+
+
     describe('setOverride', function() {
         it('should not override by default', function() {
             var overide = slog.setOverride(conf);
             assert.equal(overide, false);
         });
         it('should set override if after is set and count down', function() {
-            conf.after = 3;    
+            conf.after = 3;
             var overide = slog.setOverride(conf);
             assert.equal(overide, true);
             assert.equal(conf.leftToTail, 3);
-            
+
             overide = slog.setOverride(conf);
             assert.equal(overide, true);
             assert.equal(conf.leftToTail, 2);
-            
+
             overide = slog.setOverride(conf);
             assert.equal(overide, true);
             assert.equal(conf.leftToTail, 1);
@@ -182,6 +245,54 @@ describe('slog does in fact slog', function() {
             overide = slog.setOverride(conf);
             assert.equal(overide, false);
         });
+
+
+    });
+
+    describe('storeBefore', function() {
+        var conf = {
+            "webhookUri": "https://hooks.slack.com/services/boom",
+            "log": "crossbow.log",
+            "contains": "exception",
+            "ignoreCase": true,
+            "after": 0,
+            "before": 0,
+            "presend": []
+
+        };
+        var data = "0. don't store before";
+        it('should not store before if before is zero', function() {
+            slog.storeBefore(conf, data);
+            assert.equal(conf.presend.length, 0);
+        });
+        it('should store before if before is  bigger than zero', function() {
+            data = "1. do store before";
+            conf.before = 3;
+            slog.storeBefore(conf, data);
+            assert.equal(conf.presend.length, 1);
+        });
+        it('should keep storing before', function() {
+            data = "2. do store before again";
+            conf.before = 3;
+            slog.storeBefore(conf, data);
+            assert.equal(conf.presend.length, 2);
+        });
+        it('should keep storing before again', function() {
+            data = "3. do store before and again";
+            conf.before = 3;
+            slog.storeBefore(conf, data);
+            assert.equal(conf.presend.length, 3);
+        });
+        it('should keep storing before again and truncate the list', function() {
+            data = "4. do store before and yet again";
+            conf.before = 3;
+            slog.storeBefore(conf, data);
+            assert.equal(conf.presend.length, 3);
+            assert.equal(conf.presend[0], "2. do store before again");
+        });
+
+
+
 
 
     });
