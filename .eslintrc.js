@@ -1,6 +1,7 @@
 module.exports = {
     "env": {
-        "node": true
+        "node": true,
+        "jasmine": true
     },
     "extends": "eslint:recommended",
     "rules": {

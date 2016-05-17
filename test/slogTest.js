@@ -36,7 +36,7 @@ describe('slog does in fact slog', function() {
 
         var noContains = {
             "webhookUri": "https://hooks.slack.com/services/boom",
-            "log": "crossbow.log",
+            "log": "crossbow.log"
         };
         var conf2 = slog.setupConf(noContains);
         it('conf makes a default always true pattern', function() {
@@ -367,7 +367,7 @@ describe('slog does in fact slog', function() {
                 assert.equal(sd.text, data[x]);
                 ++x;
             });
-        })
+        });
 
     });
 
