@@ -362,11 +362,13 @@ describe('slog does in fact slog', function() {
         });
 
         var x = 1;
+        var y = 0;
         sendData.forEach(function(sd) {
             it(x + ' has send the correct data', function() {
-                assert.equal(sd.text, data[x]);
-                ++x;
+                //console.log(y,"sent data is ",sd.text);      
+                assert.equal(sd.text, data[++y]);
             });
+            ++x;
         });
 
     });
