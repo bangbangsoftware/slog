@@ -113,23 +113,38 @@ var setOverride = function(conf) {
             --conf.leftToTail;
         }
         if (conf.leftToTail > 0) {
+            console.log(conf.leftToTail, ". Override");
             return true;
         }
     }
+    console.log("No override");
     return false;
 };
 module.exports.setOverride = setOverride;
 
 var storeBefore = function(conf, data) {
-    if (conf.before < 1){
+    if (conf.before < 1) {
         return;
     }
-    if (conf.presend.length === conf.before){
+    if (conf.presend.length === conf.before) {
+        console.log("truncating Before");
         conf.presend.shift();
     }
+    console.log("Saving Before");
     conf.presend.push(data);
 };
 module.exports.storeBefore = storeBefore;
+
+var lineProcess = function(data, conf, slack) {
+    var passed = processChange(data, conf, slack);
+    if (passed) {
+        conf.presend = [];
+        conf.override = setOverride(conf);
+    } else {
+        storeBefore(conf, data);
+    }
+};
+module.exports.lineProcess = lineProcess;
 
 var tailAway = function(conf) {
     console.log("Let the log watching begin");
@@ -138,13 +153,7 @@ var tailAway = function(conf) {
         var tail = new Tail(conf.log);
         var slack = new Slack();
         tail.on("line", function(data) {
-            var passed = processChange(data, conf, slack);
-            if (passed) {
-                conf.presend = [];    
-                conf.override = setOverride(conf);
-            } else {
-                storeBefore(conf, data);
-            }
+            lineProcess(data, conf, slack);
         });
 
         tail.on("error", function(error) {

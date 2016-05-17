@@ -291,10 +291,6 @@ describe('slog does in fact slog', function() {
             assert.equal(conf.presend[0], "2. do store before again");
         });
 
-
-
-
-
     });
 
 
@@ -319,5 +315,60 @@ describe('slog does in fact slog', function() {
     });
 
 
+    describe('lineProcess should send before and after log lines', function() {
+        var confile2 = {
+            "webhookUri": "https://hooks.slack.com/services/boom",
+            "log": "crossbow.log",
+            "contains": "exception",
+            "ignoreCase": true,
+            "after": 3,
+            "before": 3
+        };
+        var conf2 = slog.setupConf(confile2);
+
+        var data = ["Sat May 07 2016 16:00:58 GMT+0100 (BST) - BEFORE-1: Just normal debug.....",
+            "Sat May 07 2016 16:00:59 GMT+0100 (BST) - BEFORE-2: Just normal debug.....",
+            "Sat May 07 2016 16:01:01 GMT+0100 (BST) - BEFORE-3: Just normal debug.....",
+            "Sat May 07 2016 16:01:02 GMT+0100 (BST) - BEFORE-4: Just normal debug.....",
+            "Sat May 07 2016 17:01:03 GMT+0100 (BST) - FOUND: Exception......",
+            "Sat May 07 2016 17:01:04 GMT+0100 (BST) - AFTER-1: stack trace......",
+            "Sat May 07 2016 17:01:05 GMT+0100 (BST) - AFTER-2: stack trace......",
+            "Sat May 07 2016 17:01:06 GMT+0100 (BST) - AFTER-3: stack trace......",
+            "Sat May 07 2016 17:01:07 GMT+0100 (BST) - AFTER-4: stack trace......"
+        ];
+        var webh = confile.webhookUri;
+        var sendData = [];
+        var slack = {
+            setWebhook: function(d) {
+                webh = d;
+            },
+            webhook: function(sd, cb) {
+                console.log("webhook-ed");
+                sendData.push(sd);
+                var err = undefined;
+                var response = "BANG";
+                cb(err, response);
+            }
+        };
+        data.forEach(function(dataItem) {
+            console.log("data item is ", dataItem);
+            slog.lineProcess(dataItem, conf2, slack, 0);
+        });
+        it('has set the right webhookUri', function() {
+            assert.equal(webh, conf2.webhookUri);
+        });
+        it('has send the correct amount of data', function() {
+            assert.equal(sendData.length, 7);
+        });
+
+        var x = 1;
+        sendData.forEach(function(sd) {
+            it(x + ' has send the correct data', function() {
+                assert.equal(sd.text, data[x]);
+                ++x;
+            });
+        })
+
+    });
 
 });
